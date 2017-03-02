@@ -24,7 +24,7 @@ int   num_stations, num_job_types, num_arrival_count, num_job_arrive, i, j, num_
       num_tasks[MAX_NUM_JOB_TYPES +1],
       route[MAX_NUM_JOB_TYPES +1][MAX_NUM_STATIONS + 1],
       num_machines_busy[MAX_NUM_STATIONS + 1], job_type, task;
-float mean_interarrival, length_simulation, prob_distrib_job_type[26], prob_distrib_arrival_count[5],
+float mean_interarrival, length_simulation, prob_distrib_job_type[26], prob_distrib_arrival_count[26],
       service_time[MAX_NUM_JOB_TYPES +1][ MAX_NUM_STATIONS + 1][BOUNDS + 1],
       accumulated_cashier_time[MAX_NUM_JOB_TYPES +1][ MAX_NUM_STATIONS + 1][BOUNDS + 1],ACT;
 FILE  *infile, *outfile;
@@ -36,7 +36,7 @@ void arrive(int new_job){
         num_job_arrive = random_integer(prob_distrib_arrival_count,STREAM_GROUP_TYPE);
         for(i=1;i<=num_job_arrive;++i)
             event_schedule(sim_time+expon(mean_interarrival,STREAM_INTERARRIVAL),EVENT_ARRIVAL);  
-        job_type= random_integer(prob_distrib_job_type,STREAM_JOB_TYPE);
+        job_type= random_integer(prob_distrib_job_type,STREAM_JOB_TYPE);       
         task = 1; 
         ACT = 0.0;
     }
@@ -52,7 +52,7 @@ void arrive(int new_job){
     }else{
         int stream;
         sampst(0.0,station);
-        sampst(0.0, num_stations+job_type);
+        sampst(0.0,num_stations+job_type);
         ++num_machines_busy[station];
         timest((float)num_machines_busy[station],station);
         transfer[3]=job_type;
@@ -63,7 +63,7 @@ void arrive(int new_job){
             case 3 : stream = STREAM_CASHIER_DRINKS;break;
         }
         event_schedule(sim_time + uniform(service_time[job_type][task][LOWER_BOUND],service_time[job_type][task][UPPER_BOUND],stream),EVENT_DEPARTURE);
-        ACT = uniform(service_time[job_type][task][LOWER_BOUND],service_time[job_type][task][UPPER_BOUND],stream);
+        ACT += uniform(service_time[job_type][task][LOWER_BOUND],service_time[job_type][task][UPPER_BOUND],stream);
         transfer[5]=ACT;
     }
 }
@@ -130,10 +130,12 @@ int main(){
 			fscanf(infile,"%f", &accumulated_cashier_time[i][j][UPPER_BOUND]);
 		}
 	}
-	for(i=1; i<=num_arrival_count; ++i)
-		fscanf(infile,"%f", &prob_distrib_arrival_count[i]);
-	for(i=1; i<=num_job_types; ++i)
-		fscanf(infile,"%f", &prob_distrib_job_type[i]);
+	for(i=1; i<=num_arrival_count; ++i){
+        fscanf(infile,"%f", &prob_distrib_arrival_count[i]);
+    }
+	for(i=1; i<=num_job_types; ++i){
+        fscanf(infile,"%f", &prob_distrib_job_type[i]);
+    }
 
 	fprintf(outfile, "Tugas 1 Modsim\n");
 	fprintf(outfile, "Konfigurasi: %s\n\n\n", finput);
