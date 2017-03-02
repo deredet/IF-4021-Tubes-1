@@ -34,7 +34,7 @@ void arrive(int new_job){
     int station;
     if (new_job ==1){
         num_job_arrive = random_integer(prob_distrib_arrival_count,STREAM_GROUP_TYPE);
-        for(i=1;i<=num_job_arrive;++i)
+        //for(i=1;i<=num_job_arrive;++i)
             event_schedule(sim_time+expon(mean_interarrival,STREAM_INTERARRIVAL),EVENT_ARRIVAL);  
         job_type= random_integer(prob_distrib_job_type,STREAM_JOB_TYPE);       
         task = 1; 
@@ -190,13 +190,14 @@ int main(){
     maxatr = 5;
 
     num_job_arrive = random_integer(prob_distrib_arrival_count,STREAM_GROUP_TYPE);
-    for(i=1;i<=num_job_arrive;++i)
+    //for(i=1;i<=num_job_arrive;++i)
         event_schedule(expon(mean_interarrival,STREAM_INTERARRIVAL),EVENT_ARRIVAL);
     
     event_schedule(length_simulation,EVENT_END_SIMULATION);
 
     do{
         timing();
+        printf("%f\n", sim_time);
         switch(next_event_type){
             case EVENT_ARRIVAL: arrive(1); break;
             case EVENT_DEPARTURE: depart(); break;
