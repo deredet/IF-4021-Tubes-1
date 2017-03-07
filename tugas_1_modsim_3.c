@@ -39,11 +39,11 @@ void arrive(int new_job){
         event_schedule(sim_time+expon(mean_interarrival,STREAM_INTERARRIVAL),EVENT_ARRIVAL);  
         job_type= random_integer(prob_distrib_job_type,STREAM_JOB_TYPE);       
         task = 1; 
-        ACT = 0.0;
+        
     }else if(new_job==2){
         job_type= random_integer(prob_distrib_job_type,STREAM_JOB_TYPE);       
         task = 1; 
-        ACT = 0.0;
+        
     }
 
     station = route[job_type][task];
@@ -58,7 +58,17 @@ void arrive(int new_job){
                 transfer[4]=task;
                 transfer[5]=machine;
                 ++num_machines_busy[station];
-                event_schedule(sim_time+ACT,EVENT_DEPARTURE);
+                switch(job_type){
+                    case 1: 
+                        event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],service_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_HOTFOOD)+ uniform(accumulated_cashier_time[job_type][2][LOWER_BOUND],service_time[job_type][2][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
+                        break;
+                    case 2: 
+                        event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],service_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_SANDWICH)+ uniform(accumulated_cashier_time[job_type][2][LOWER_BOUND],service_time[job_type][2][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
+                        break;
+                    case 3: 
+                        event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],service_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
+                        break;
+                }
                 return;
             }
         }
@@ -75,7 +85,6 @@ void arrive(int new_job){
         transfer[1]=sim_time;
         transfer[2]=job_type;
         transfer[3]=task;
-        transfer[4]=ACT;
         list_file(LAST,station+shortest_queue);
         list_file(LAST,station);
     }else{
@@ -83,7 +92,6 @@ void arrive(int new_job){
             transfer[1]=sim_time;
             transfer[2]=job_type;
             transfer[3]=task;
-            transfer[4]=ACT;
             list_file(LAST,station);
         }else{
             int st_stream, act_stream;
@@ -98,8 +106,6 @@ void arrive(int new_job){
                 case 2 : st_stream = STREAM_SERVICE_SANDWICH; act_stream = STREAM_CASHIER_SANDWICH; break;
                 case 3 : st_stream = STREAM_SERVICE_DRINKS; act_stream = STREAM_CASHIER_DRINKS; break;
             }
-            ACT += uniform(accumulated_cashier_time[job_type][task][LOWER_BOUND],accumulated_cashier_time[job_type][task][UPPER_BOUND],act_stream);
-            transfer[5]=ACT;
             event_schedule(sim_time + uniform(service_time[job_type][task][LOWER_BOUND],service_time[job_type][task][UPPER_BOUND],st_stream),EVENT_DEPARTURE);
         }
 
@@ -108,6 +114,7 @@ void arrive(int new_job){
 
 void depart(){
     int station, job_type_queue, task_queue;
+    float ACT;
     job_type = transfer[3];
     task = transfer [4];
     station = route[job_type][task];
@@ -119,12 +126,21 @@ void depart(){
         }else{
             list_remove(FIRST,station);
             list_remove(FIRST,station+machine);
-            ACT = transfer[4]; 
             sampst(sim_time-transfer[1],station);
             transfer[3]=job_type;
             transfer[4]=task;
             transfer[5]=machine;
-            event_schedule(sim_time+ACT,EVENT_DEPARTURE);
+            switch(job_type){
+                case 1: 
+                    event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],accumulated_cashier_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_HOTFOOD)+ uniform(accumulated_cashier_time[job_type][2][LOWER_BOUND],accumulated_cashier_time[job_type][2][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
+                    break;
+                case 2: 
+                    event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],accumulated_cashier_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_SANDWICH)+ uniform(accumulated_cashier_time[job_type][2][LOWER_BOUND],accumulated_cashier_time[job_type][2][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
+                    break;
+                case 3: 
+                    event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],accumulated_cashier_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
+                    break;
+            }
         }
     }else{
         if(list_size[station]==0){
@@ -136,18 +152,14 @@ void depart(){
             sampst(sim_time - transfer[1],station);
             job_type_queue = transfer[2];
             task_queue = transfer[3];
-            ACT = transfer[4];
             sampst(sim_time -transfer[1], num_stations+job_type_queue);
             transfer[3]=job_type_queue;
             transfer[4]=task_queue;
-            
             switch(station){
                 case 1 : st_stream = STREAM_SERVICE_HOTFOOD; act_stream = STREAM_CASHIER_HOTFOOD; break;
                 case 2 : st_stream = STREAM_SERVICE_SANDWICH; act_stream = STREAM_CASHIER_SANDWICH; break;
                 case 3 : st_stream = STREAM_SERVICE_DRINKS; act_stream = STREAM_CASHIER_DRINKS; break;
             }
-            ACT += uniform(accumulated_cashier_time[job_type][task][LOWER_BOUND],accumulated_cashier_time[job_type][task][UPPER_BOUND],act_stream);            
-            transfer[5]=ACT;
             event_schedule(sim_time + uniform(service_time[job_type][task][LOWER_BOUND],service_time[job_type][task][UPPER_BOUND],st_stream),EVENT_DEPARTURE);
         }
     }

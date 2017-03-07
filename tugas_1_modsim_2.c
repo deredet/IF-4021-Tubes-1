@@ -43,9 +43,9 @@ void arrive(int new_job){
         job_type= random_integer(prob_distrib_job_type,STREAM_JOB_TYPE);       
         task = 1; 
     }
-
     station = route[job_type][task];
 
+    printf("j=%d t=%d s=%d\n", job_type, task, station);
     if(num_machines_busy[station] == num_machines[station]){
         transfer[1]=sim_time;
         transfer[2]=job_type;
@@ -75,7 +75,7 @@ void arrive(int new_job){
             switch(station){
                 case 1 : st_stream = STREAM_SERVICE_HOTFOOD;break;
                 case 2 : st_stream = STREAM_SERVICE_SANDWICH; break;
-                case 3 : st_stream = STREAM_SERVICE_DRINKS; break;
+                case 3 : st_stream = STREAM_SERVICE_DRINKS;break;
             }
             event_schedule(sim_time + uniform(service_time[job_type][task][LOWER_BOUND],service_time[job_type][task][UPPER_BOUND],st_stream),EVENT_DEPARTURE);
 
@@ -104,13 +104,13 @@ void depart(){
         if(station ==4 ){
             switch(job_type){
                 case 1: 
-                    event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],service_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_HOTFOOD)+ uniform(accumulated_cashier_time[job_type][2][LOWER_BOUND],service_time[job_type][2][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
+                    event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],accumulated_cashier_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_HOTFOOD)+ uniform(accumulated_cashier_time[job_type][2][LOWER_BOUND],accumulated_cashier_time[job_type][2][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
                     break;
                 case 2: 
-                    event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],service_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_SANDWICH)+ uniform(accumulated_cashier_time[job_type][2][LOWER_BOUND],service_time[job_type][2][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
+                    event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],accumulated_cashier_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_SANDWICH)+ uniform(accumulated_cashier_time[job_type][2][LOWER_BOUND],accumulated_cashier_time[job_type][2][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
                     break;
                 case 3: 
-                    event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],service_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
+                    event_schedule(sim_time + uniform(accumulated_cashier_time[job_type][1][LOWER_BOUND],accumulated_cashier_time[job_type][1][UPPER_BOUND],STREAM_CASHIER_DRINKS),EVENT_DEPARTURE);
                     break;
             }
         }else{
@@ -121,12 +121,12 @@ void depart(){
             }
             event_schedule(sim_time + uniform(service_time[job_type][task][LOWER_BOUND],service_time[job_type][task][UPPER_BOUND],st_stream),EVENT_DEPARTURE);
 
-        }
-        if(task < num_tasks[job_type]){
+        } 
+    }
+    if(task < num_tasks[job_type]){
             ++task;
             arrive(3);
         }
-    }
 }
 
 void report(){
@@ -159,20 +159,7 @@ void report(){
              "\nstation       in queue       utilization        in queue");
     for (j = 1; j <= num_stations; ++j)
         fprintf(outfile, "\n\n%4d%17.3f%17.3f%17.3f", j, filest(j),
-                timest(0.0, -j) / num_machines[j], sampst(0.0, -j));
-
-    /*fprintf(outfile,
-           "\n\n\n Work       Max number      Maximum       Maximum delay");
-    fprintf(outfile,
-             "\nstation       in queue       utilization        in queue");
-    for (j = 1; j <= num_stations; ++j)
-        fprintf(outfile, "\n\n%4d%17.3f%17.3f%17.3f", j, timest(-1.0, -(TIM_VAR+j)),
-                timest(-1.0, -j) / num_machines[j], sampst(-1.0, -j));
-*/
-    
-        avg_num_in_queue += filest(4);
-    fprintf(outfile, "\n\nWith%2d tellers, total average number in queue = %10.3f",
-            num_stations, avg_num_in_queue);
+                timest(0.0, -j)/ num_machines[j], sampst(0.0, -j));
     
 }
 
@@ -270,11 +257,12 @@ int main(){
 
     do{
         timing();
-        printf("%f\n", sim_time);
+        //printf("%f\n", sim_time);
         switch(next_event_type){
             case EVENT_ARRIVAL: 
                 num_job_arrive = random_integer(prob_distrib_arrival_count,STREAM_GROUP_TYPE);
                 for(i=1;i<=num_job_arrive;++i){
+                
                     if (i==1){
                         arrive(1);
                     }else{
