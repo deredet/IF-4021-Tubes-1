@@ -200,6 +200,10 @@ void report(){
     for (j = 1; j < num_stations; ++j)
         fprintf(outfile, "\n\n%4d%17.3f%17.3f%17.3f%17.3f", j, filest(j),
                 timest(0.0, -j) / num_machines[j], sampst(0.0, -j),timest (-1.0, -(TIM_VAR + j)));
+    fprintf(outfile,
+           "\n\n\n Cashier     Average number      Average       Average delay       Maximum number");
+    fprintf(outfile,
+             "\nMachine       in queue       utilization        in queue            in queue");
     for (machine = 1; machine <= num_machines[4]; ++machine)
             fprintf(outfile, "\n\n%4d%17.3f%17.3f%17.3f%17.3f", machine, filest(machine),
                 timest(0.0, -machine) , sampst(0.0, -machine),timest (-1.0, -(TIM_VAR + machine))); 
