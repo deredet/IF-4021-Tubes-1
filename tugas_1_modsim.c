@@ -217,8 +217,8 @@ void report(){
         max_customer+=   timest (-1.0, -(TIM_VAR + j));
     }
     for (machine = 1; machine <= num_machines[4]; ++machine){
-         avg_customer += filest(j);
-        max_customer+=   timest (-1.0, -(TIM_VAR + j));
+         avg_customer += filest(machine);
+        max_customer+=   timest (-1.0, -(TIM_VAR + machine));
     }
     
     fprintf(outfile, "\n\n%3f%17d",avg_customer, max_customer);    
