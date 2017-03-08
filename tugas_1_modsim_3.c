@@ -170,7 +170,7 @@ void depart(){
 }
 
 void report(){
-    int   i,machine;
+     int   i,machine;
     float overall_avg_job_tot_delay, avg_job_tot_delay, sum_probs, avg_num_in_queue;
 
     /* Compute the average total delay in queue for each job type and the
@@ -194,12 +194,16 @@ void report(){
        average delay in queue for each station. */
 
     fprintf(outfile,
-           "\n\n\n Work      Average number      Average       Average delay");
+           "\n\n\n Work      Average number      Average       Average delay       Maximum number");
     fprintf(outfile,
-             "\nstation       in queue       utilization        in queue");
+             "\nstation       in queue       utilization        in queue            in queue");
     for (j = 1; j < num_stations; ++j)
-        fprintf(outfile, "\n\n%4d%17.3f%17.3f%17.3f", j, filest(j),
-                timest(0.0, -j) / num_machines[j], sampst(0.0, -j));
+        fprintf(outfile, "\n\n%4d%17.3f%17.3f%17.3f%17.3f", j, filest(j),
+                timest(0.0, -j) / num_machines[j], sampst(0.0, -j),timest (-1.0, -(TIM_VAR + j)));
+    for (machine = 1; machine <= num_machines[4]; ++machine)
+            fprintf(outfile, "\n\n%4d%17.3f%17.3f%17.3f%17.3f", machine, filest(machine),
+                timest(0.0, -machine) , sampst(0.0, -machine),timest (-1.0, -(TIM_VAR + machine))); 
+    
     fprintf(outfile, "\n\nDelays in station queue, in seconds:\n");
     out_sampst(outfile, 1, 3 );
     fprintf(outfile, "\n\nDelays in cashier queue, in seconds:\n");
@@ -208,6 +212,24 @@ void report(){
         avg_num_in_queue += filest(4+machine);
     fprintf(outfile, "\n\nWith%2d tellers, total average number in queue = %10.3f",
             num_machines[4],avg_num_in_queue);
+
+    fprintf(outfile,
+           "\n\n\nAverage number      Maximum number");
+    fprintf(outfile,
+             "\ncustomer              in queue");
+    float avg_customer = 0 ;
+    int max_customer = 0;
+    for (j = 1; j < num_stations; ++j){
+        avg_customer += filest(j);
+        max_customer+=   timest (-1.0, -(TIM_VAR + j));
+    }
+    for (machine = 1; machine <= num_machines[4]; ++machine){
+         avg_customer += filest(j);
+        max_customer+=   timest (-1.0, -(TIM_VAR + j));
+    }
+    
+    fprintf(outfile, "\n\n%3f%17d",avg_customer, max_customer);    
+
 }
 
 int main(){
